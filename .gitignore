@@ -1,0 +1,8 @@
+target
+dependency-reduced-pom.xml
+
+
+.DS_Store
+._*
+Thumbs.db
+

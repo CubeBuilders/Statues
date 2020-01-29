@@ -1,0 +1,15 @@
+name: Statues
+main: hk.siggi.statues.Statues
+version: ${project.version}
+author: Siggi
+description: The Statues plugin for CubeBuilders.
+depend: [CubeTokens, PlugCubeBuildersIn, Vault]
+api-version: 1.13
+permissions:
+    hk.siggi.statues.statueadmin:
+        description: Allow banning spammers using /ad.
+        default: op
+commands:
+    statue:
+        description: Delete nearby statue.
+        usage: /<command>
