@@ -18,8 +18,15 @@ import org.bukkit.inventory.ItemStack;
 
 public class Statue {
 
+	private GameProfile randomizeUUID(GameProfile profile) {
+		GameProfile newProfile = new GameProfile(UUID.randomUUID(), profile.getName());
+		newProfile.getProperties().putAll(profile.getProperties());
+		return newProfile;
+	}
+
 	public Statue(GameProfile profile, Location location) {
-		this.profile = profile;
+		this.originalUUID = profile.getId();
+		this.profile = randomizeUUID(profile);
 		if (location != null) {
 			x = location.getX();
 			y = location.getY();
@@ -117,6 +124,7 @@ public class Statue {
 	public boolean armswing = false;
 
 	public ItemStack itemInHand = null;
+	public UUID originalUUID = null;
 	public GameProfile profile;
 	public StatueEntity statueEntity;
 	public boolean facePlayer = false;
@@ -128,7 +136,7 @@ public class Statue {
 	public boolean save = true;
 
 	public String serialize() {
-		return ("VER1," + world + "," + x + "," + y + "," + z + "," + pitch + "," + yaw + "," + profile.getId() + "," + facePlayer + "," + standStraight + "," + price + "," + wasWallSign + "," + face);
+		return ("VER1," + world + "," + x + "," + y + "," + z + "," + pitch + "," + yaw + "," + originalUUID + "," + facePlayer + "," + standStraight + "," + price + "," + wasWallSign + "," + face);
 	}
 
 	public static Statue deserialize(String statueString) {
