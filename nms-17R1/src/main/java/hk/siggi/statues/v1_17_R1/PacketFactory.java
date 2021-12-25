@@ -2,15 +2,12 @@ package hk.siggi.statues.v1_17_R1;
 
 import com.mojang.authlib.GameProfile;
 import static hk.siggi.statues.Reflection.getField;
-import static hk.siggi.statues.Reflection.setField;
-import java.lang.reflect.Constructor;
 import java.util.List;
 
-import io.netty.buffer.ByteBuf;
+import hk.siggi.statues.PacketBuildHelper;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.PacketDataSerializer;
 import net.minecraft.network.chat.ChatComponentText;
-import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.network.syncher.DataWatcher;
 import net.minecraft.world.level.EnumGamemode;
@@ -25,9 +22,9 @@ public class PacketFactory extends hk.siggi.statues.PacketFactory<DataWatcher> {
 	private static final int UPDATE_DISPLAY_NAME = 3;
 	private static final int REMOVE_PLAYER = 4;
 
-	private static byte[] bytes = new byte[256];
-	private static PacketDataSerializer zeroBuffer(int length) {
-		return new PacketDataSerializer(Unpooled.wrappedBuffer(bytes, 0, length));
+	private static PacketDataSerializer wrap(PacketBuildHelper helper) {
+		byte[] bytes = helper.toByteArray();
+		return new PacketDataSerializer(Unpooled.wrappedBuffer(bytes, 0, bytes.length));
 	}
 
 	PacketFactory() {
@@ -66,14 +63,15 @@ public class PacketFactory extends hk.siggi.statues.PacketFactory<DataWatcher> {
 											   ItemStack itemInHand, DataWatcher dataWatcher) {
 		net.minecraft.world.item.ItemStack nmsItemStack = CraftItemStack.asNMSCopy((CraftItemStack) itemInHand);
 		try {
-			PacketPlayOutNamedEntitySpawn spawn = new PacketPlayOutNamedEntitySpawn(zeroBuffer(43));
-			setField(spawn, "a", id);
-			setField(spawn, "b", profile.getId());
-			setField(spawn, "c", x);
-			setField(spawn, "d", y);
-			setField(spawn, "e", z);
-			setField(spawn, "f", ((byte) (int) (yaw * 256.0F / 360.0F)));
-			setField(spawn, "g", ((byte) (int) (pitch * 256.0F / 360.0F)));
+			PacketBuildHelper helper = new PacketBuildHelper();
+			helper.writeVarInt(id);
+			helper.writeUUID(profile.getId());
+			helper.dataOut.writeDouble(x);
+			helper.dataOut.writeDouble(y);
+			helper.dataOut.writeDouble(z);
+			helper.dataOut.writeByte((byte) (int) (yaw * 256.0F / 360.0F));
+			helper.dataOut.writeByte((byte) (int) (pitch * 256.0F / 360.0F));
+			PacketPlayOutNamedEntitySpawn spawn = new PacketPlayOutNamedEntitySpawn(wrap(helper));
 			return spawn;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -94,9 +92,10 @@ public class PacketFactory extends hk.siggi.statues.PacketFactory<DataWatcher> {
 	@Override
 	public PacketPlayOutAnimation animate(int entityID, int animation) {
 		try {
-			PacketPlayOutAnimation packet = new PacketPlayOutAnimation(zeroBuffer(2));
-			setField(packet, "a", entityID);
-			setField(packet, "b", animation);
+			PacketBuildHelper helper = new PacketBuildHelper();
+			helper.writeVarInt(entityID);
+			helper.dataOut.writeByte(animation);
+			PacketPlayOutAnimation packet = new PacketPlayOutAnimation(wrap(helper));
 			return packet;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -107,9 +106,10 @@ public class PacketFactory extends hk.siggi.statues.PacketFactory<DataWatcher> {
 	@Override
 	public PacketPlayOutEntityHeadRotation rotateHead(int entityID, byte rotation) {
 		try {
-			PacketPlayOutEntityHeadRotation packet = new PacketPlayOutEntityHeadRotation(zeroBuffer(2));
-			setField(packet, "a", entityID);
-			setField(packet, "b", rotation);
+			PacketBuildHelper helper = new PacketBuildHelper();
+			helper.writeVarInt(entityID);
+			helper.dataOut.writeByte(rotation);
+			PacketPlayOutEntityHeadRotation packet = new PacketPlayOutEntityHeadRotation(wrap(helper));
 			return packet;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -172,14 +172,15 @@ public class PacketFactory extends hk.siggi.statues.PacketFactory<DataWatcher> {
 	@Override
 	public PacketPlayOutEntityTeleport teleport(int entityID, double x, double y, double z, byte yaw, byte pitch, boolean onGround) {
 		try {
-			PacketPlayOutEntityTeleport packet = new PacketPlayOutEntityTeleport(zeroBuffer(28));
-			setField(packet, "a", entityID);
-			setField(packet, "b", x);
-			setField(packet, "c", y);
-			setField(packet, "d", z);
-			setField(packet, "e", yaw);
-			setField(packet, "f", pitch);
-			setField(packet, "g", onGround);
+			PacketBuildHelper helper = new PacketBuildHelper();
+			helper.writeVarInt(entityID);
+			helper.dataOut.writeDouble(x);
+			helper.dataOut.writeDouble(y);
+			helper.dataOut.writeDouble(z);
+			helper.dataOut.writeByte(yaw);
+			helper.dataOut.writeByte(pitch);
+			helper.dataOut.writeBoolean(onGround);
+			PacketPlayOutEntityTeleport packet = new PacketPlayOutEntityTeleport(wrap(helper));
 			return packet;
 		} catch (Exception e) {
 			e.printStackTrace();
