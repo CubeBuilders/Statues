@@ -9,6 +9,7 @@ public class PlayerInformation {
 
 	public final Player player;
 	public final Set<Statue> shownStatues;
+	public final Set<Statue> nearStatues;
 	public final Set<Statue> listedStatues;
 	public World lastWorld;
 
@@ -16,6 +17,7 @@ public class PlayerInformation {
 		this.player = player;
 		this.lastWorld = player.getWorld();
 		shownStatues = new HashSet<Statue>();
+		nearStatues = new HashSet<Statue>();
 		listedStatues = new HashSet<Statue>();
 	}
 }

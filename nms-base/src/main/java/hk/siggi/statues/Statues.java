@@ -283,27 +283,42 @@ public class Statues extends JavaPlugin implements Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void playerMoved(PlayerMoveEvent event) {
-		PlayerInformation info = playerInfo.get(event.getPlayer().getName());
+		Player p = event.getPlayer();
+		PlayerInformation info = playerInfo.get(p.getName());
 		if (info == null) {
-			playerInfo.put(event.getPlayer().getName(), info = new PlayerInformation(event.getPlayer()));
+			playerInfo.put(p.getName(), info = new PlayerInformation(p));
 		}
 		if (info.lastWorld != event.getTo().getWorld()) {
-			playerInfo.remove(event.getPlayer().getName());
+			playerInfo.remove(p.getName());
 			return;
 		}
 		for (Statue statue : info.shownStatues) {
+			Location statuePos = getLocation(statue);
+			double distanceSquared = statuePos.distanceSquared(p.getLocation());
 			if (statue.facePlayer) {
-				Location statuePos = getLocation(statue);
-				if (statuePos.distanceSquared(event.getPlayer().getLocation()) <= (10.0 * 10.0)) {
+				if (distanceSquared <= (10.0 * 10.0)) {
 					Location loc = event.getTo().clone();
 					loc.setY(loc.getY() + getNMSUtil().eyesHeight);
 					Object[] facePackets = statue.statueEntity.face(loc);
 					for (Object packet : facePackets) {
-						getNMSUtil().sendPacket(event.getPlayer(), packet);
+						getNMSUtil().sendPacket(p, packet);
 					}
 				}
 			}
+			if (!statue.alwaysShownOnPlayerList && !info.nearStatues.contains(statue) && distanceSquared < (16.0 * 16.0)) {
+				info.nearStatues.add(statue);
+				getNMSUtil().sendPacket(p, addToPlayerListPacket(statue));
+				new BukkitRunnable() {
+					@Override
+					public void run() {
+						if (!statue.alwaysShownOnPlayerList) {
+							getNMSUtil().sendPacket(p, removeFromPlayerListPacket(p, statue));
+						}
+					}
+				}.runTaskLater(this, 40L);
+			}
 		}
+		info.nearStatues.retainAll(info.shownStatues);
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
