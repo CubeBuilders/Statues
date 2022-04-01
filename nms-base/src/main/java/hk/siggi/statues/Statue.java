@@ -122,6 +122,7 @@ public class Statue {
 
 	public boolean sendPositionUpdate = false;
 	public boolean armswing = false;
+	public int metadataTick = 0;
 
 	public ItemStack itemInHand = null;
 	public UUID originalUUID = null;

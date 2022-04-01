@@ -452,6 +452,9 @@ public class Statues extends JavaPlugin implements Listener {
 								if (statue.armswing) {
 									nmsUtil.sendPacket(p, statue.statueEntity.swingArm());
 								}
+								if (statue.metadataTick == 0) {
+									nmsUtil.sendPacket(p, statue.statueEntity.metadata());
+								}
 							}
 						}
 						for (Iterator<Statue> it = statues.iterator(); it.hasNext();) {
@@ -491,6 +494,11 @@ public class Statues extends JavaPlugin implements Listener {
 					statue.prevPitch = statue.pitch;
 					statue.prevYaw = statue.yaw;
 					statue.armswing = false;
+					if (statue.metadataTick >= 99) {
+						statue.metadataTick = 0;
+					} else {
+						statue.metadataTick += 1;
+					}
 				}
 				if (shouldSave) {
 					save();
