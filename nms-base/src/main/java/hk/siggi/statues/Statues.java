@@ -238,7 +238,7 @@ public class Statues extends JavaPlugin implements Listener {
 					getNMSUtil().sendPacket(p, statue.statueEntity.metadata());
 				}
 			}
-		}.runTaskLater(this, 60L);
+		}.runTaskLater(this, 20L);
 		new BukkitRunnable() {
 			@Override
 			public void run() {
