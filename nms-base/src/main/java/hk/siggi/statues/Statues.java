@@ -226,13 +226,17 @@ public class Statues extends JavaPlugin implements Listener {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				getNMSUtil().sendPacket(p, statue.statueEntity.spawn());
+				if (pi.shownStatues.contains(statue)) {
+					getNMSUtil().sendPacket(p, statue.statueEntity.spawn());
+				}
 			}
 		}.runTaskLater(this, 10L);
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				getNMSUtil().sendPacket(p, statue.statueEntity.metadata());
+				if (pi.shownStatues.contains(statue)) {
+					getNMSUtil().sendPacket(p, statue.statueEntity.metadata());
+				}
 			}
 		}.runTaskLater(this, 60L);
 		new BukkitRunnable() {
