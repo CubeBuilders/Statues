@@ -27,6 +27,7 @@
 	<modules>
 		<module>Statues</module>
 		<module>nms-base</module>
+		<module>nms-8R3</module>
 		<module>nms-9R1</module>
 		<module>nms-9R2</module>
 		<module>nms-10R1</module>
