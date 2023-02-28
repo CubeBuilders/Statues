@@ -154,8 +154,10 @@ public class Statue {
 				boolean facePlayer = Boolean.parseBoolean(pieces[8]);
 				boolean standStraight = Boolean.parseBoolean(pieces[9]);
 				String price = pieces[10];
+				if (price.equals("null")) price = null;
 				boolean wasWallSign = Boolean.parseBoolean(pieces[11]);
 				String face = pieces[12];
+				if (face.equals("null")) face = null;
 				GameProfile profile = Statues.getInstance().getProfile(uuid);
 				Statue statue = new Statue(profile, null);
 				statue.x = x;
