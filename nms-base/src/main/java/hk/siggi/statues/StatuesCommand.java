@@ -63,7 +63,7 @@ public class StatuesCommand implements CommandExecutor {
 			Statue statue = new Statue(profile, player.getLocation());
 			statue.facePlayer = facePlayer;
 			statue.standStraight = standStraight;
-			plugin.statues.add(statue);
+			plugin.add(statue);
 			plugin.save();
 		} else if (split[0].equalsIgnoreCase("delete")) {
 			if (!checkPermission(player, "hk.siggi.statues.delete")) {

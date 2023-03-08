@@ -24,72 +24,7 @@
 		</dependency>
 		<dependency>
 			<groupId>io.siggi</groupId>
-			<artifactId>Statues-nms-9R1</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>io.siggi</groupId>
-			<artifactId>Statues-nms-9R2</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>io.siggi</groupId>
-			<artifactId>Statues-nms-10R1</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>io.siggi</groupId>
-			<artifactId>Statues-nms-11R1</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>io.siggi</groupId>
-			<artifactId>Statues-nms-12R1</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>io.siggi</groupId>
-			<artifactId>Statues-nms-13R1</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>io.siggi</groupId>
-			<artifactId>Statues-nms-13R2</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>io.siggi</groupId>
-			<artifactId>Statues-nms-14R1</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>io.siggi</groupId>
-			<artifactId>Statues-nms-15R1</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>io.siggi</groupId>
-			<artifactId>Statues-nms-16R1</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>io.siggi</groupId>
-			<artifactId>Statues-nms-17R1</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>io.siggi</groupId>
-			<artifactId>Statues-nms-18R1</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>io.siggi</groupId>
 			<artifactId>Statues-nms-18R2</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>io.siggi</groupId>
-			<artifactId>Statues-nms-19R1</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>

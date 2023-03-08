@@ -1,11 +1,18 @@
 package hk.siggi.statues;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+import hk.siggi.statues.nms.NMSUtil;
 import java.lang.ref.WeakReference;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import net.citizensnpcs.api.npc.NPC;
+import net.citizensnpcs.trait.SkinTrait;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -13,8 +20,9 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class Statue {
 
@@ -37,8 +45,6 @@ public class Statue {
 		} else {
 			world = Bukkit.getWorlds().get(0).getName();
 		}
-		statueEntity = Statues.getInstance().getNMSUtil().newStatueEntity(profile, this);
-		entityID = Statues.getInstance().getNMSUtil().getNextEntityID();
 	}
 
 	public Statue(GameProfile profile, Location location, Player onlyVisibleTo) {
@@ -61,51 +67,35 @@ public class Statue {
 		}
 		for (Iterator<WeakReference<Player>> it = onlyVisibleTo.iterator(); it.hasNext();) {
 			WeakReference<Player> pp = it.next();
-			if (pp == null) {
+			Player p;
+			if (pp == null || (p = pp.get()) == null || !p.isOnline()) {
 				it.remove();
-				continue;
-			}
-			Player p = pp.get();
-			if (p == null) {
-				it.remove();
-				continue;
-			}
-			if (!p.isOnline()) {
-				it.remove();
-				continue;
 			}
 		}
 		return onlyVisibleTo.isEmpty();
 	}
-	private List<WeakReference<Player>> onlyVisibleTo = null;
+	List<WeakReference<Player>> onlyVisibleTo = null;
 
-	public boolean canShow(Player p) {
+	public Set<Player> getVisibleTo() {
 		if (onlyVisibleTo == null) {
-			return true;
+			return null;
 		}
-		boolean result = false;
-		for (Iterator<WeakReference<Player>> it = onlyVisibleTo.iterator(); it.hasNext();) {
+		Set<Player> players = new HashSet<>();
+		for (Iterator<WeakReference<Player>> it = onlyVisibleTo.iterator(); it.hasNext(); ) {
 			WeakReference<Player> pp = it.next();
-			if (pp == null) {
+			Player p;
+			if (pp == null || (p = pp.get()) == null || !p.isOnline()) {
 				it.remove();
 				continue;
 			}
-			Player ppp = pp.get();
-			if (ppp == null) {
-				it.remove();
-				continue;
-			}
-			if (!ppp.isOnline()) {
-				it.remove();
-				continue;
-			}
-			if (ppp == p) {
-				result = true;
-			}
+			players.add(p);
 		}
-		return result;
+		return players;
 	}
-	public int entityID = 0;
+
+	NPC citizensNpc;
+	Player playerEntity;
+
 	public String world;
 
 	public double x = 0.0;
@@ -114,20 +104,8 @@ public class Statue {
 	public float pitch = 0.0f; // up & down
 	public float yaw = 0.0f; // left & right
 
-	public double prevX = 0.0;
-	public double prevY = 0.0;
-	public double prevZ = 0.0;
-	public float prevPitch = 0.0f;
-	public float prevYaw = 0.0f;
-
-	public boolean sendPositionUpdate = false;
-	public boolean armswing = false;
-	public int metadataTick = 0;
-
-	public ItemStack itemInHand = null;
 	public UUID originalUUID = null;
 	public GameProfile profile;
-	public StatueEntity statueEntity;
 	public boolean facePlayer = false;
 	public boolean standStraight = false;
 	public boolean deleted = false;
@@ -227,53 +205,116 @@ public class Statue {
 		statue.facePlayer = facePlayer;
 		statue.standStraight = standStraight;
 		statue.price = sign.getLine(1);
-		statue.wasWallSign = block.getType() == Statues.getInstance().getNMSUtil().getWallSign();
+		statue.wasWallSign = block.getType() == NMSUtil.get().getWallSign();
 		statue.face = face.toString();
 		return statue;
 	}
 
+	public void createNpc() {
+		if (citizensNpc != null || deleted) return;
+		citizensNpc = Statues.getInstance().npcRegistry.createNPC(EntityType.PLAYER, profile.getName());
+		SkinTrait st = citizensNpc.getOrAddTrait(SkinTrait.class);
+		st.setFetchDefaultSkin(false);
+		try {
+			Collection<Property> textures = profile.getProperties().get("textures");
+			Property property = textures.iterator().next();
+			st.setSkinPersistent(profile.getName(), property.getSignature(), property.getValue());
+		} catch (Exception e) {
+		}
+	}
+
+	public void deleteNpc() {
+		if (citizensNpc == null) return;
+		despawnEntity();
+		citizensNpc.destroy();
+		citizensNpc = null;
+	}
+
+	public void trySpawnEntity() {
+		if (citizensNpc == null) return;
+		Location location = getLocation();
+		if (location == null) {
+			return;
+		}
+		if (citizensNpc.spawn(location)) {
+			playerEntity = (Player) citizensNpc.getEntity();
+			Set<Player> visibleTo = getVisibleTo();
+			if (visibleTo != null) {
+				for (Player p : Bukkit.getOnlinePlayers()) {
+					if (visibleTo.contains(p)) continue;
+					p.hidePlayer(Statues.getInstance(), playerEntity);
+				}
+			}
+		}
+	}
+
+	public void despawnEntity() {
+		if (citizensNpc == null || playerEntity == null) return;
+		citizensNpc.despawn();
+		playerEntity = null;
+	}
+
 	public void delete() {
 		deleted = true;
+		deleteNpc();
 		if (price != null && face != null) {
 			try {
-				Location location = Statues.getLocation(this);
-				Block block = location.getBlock();
-				NMSUtil nmsUtil = Statues.getInstance().getNMSUtil();
-				block.setType(wasWallSign ? nmsUtil.getWallSign() : nmsUtil.getSignPost());
-				BlockState state = block.getState();
-				org.bukkit.block.Sign signState = (org.bukkit.block.Sign) state;
-				org.bukkit.material.Sign signMaterial = (org.bukkit.material.Sign) signState.getData();
-				try {
-					signMaterial.setFacingDirection(BlockFace.valueOf(face));
-				} catch (Exception e) {
+				Location location = getLocation();
+				if (location != null) {
+					Block block = location.getBlock();
+					NMSUtil nmsUtil = NMSUtil.get();
+					block.setType(wasWallSign ? nmsUtil.getWallSign() : nmsUtil.getSignPost());
+					BlockState state = block.getState();
+					org.bukkit.block.Sign signState = (org.bukkit.block.Sign) state;
+					org.bukkit.material.Sign signMaterial = (org.bukkit.material.Sign) signState.getData();
+					try {
+						signMaterial.setFacingDirection(BlockFace.valueOf(face));
+					} catch (Exception e) {
+					}
+					signState.setData(signMaterial);
+					if (facePlayer) {
+						signState.setLine(0, "[Statue]");
+					} else {
+						signState.setLine(0, "<Statue>");
+					}
+					signState.setLine(1, price);
+					if (price.toLowerCase().endsWith(" spot")) {
+						signState.setLine(2, "");
+						signState.setLine(3, "");
+					} else if (price.equalsIgnoreCase("Free")) {
+						signState.setLine(2, "Right click");
+						signState.setLine(3, "to claim!");
+					} else {
+						signState.setLine(2, "Right click");
+						signState.setLine(3, "to buy!");
+					}
+					signState.update();
 				}
-				signState.setData(signMaterial);
-				if (facePlayer) {
-					signState.setLine(0, "[Statue]");
-				} else {
-					signState.setLine(0, "<Statue>");
-				}
-				signState.setLine(1, price);
-				if (price.toLowerCase().endsWith(" spot")) {
-					signState.setLine(2, "");
-					signState.setLine(3, "");
-				} else if (price.equalsIgnoreCase("Free")) {
-					signState.setLine(2, "Right click");
-					signState.setLine(3, "to claim!");
-				} else {
-					signState.setLine(2, "Right click");
-					signState.setLine(3, "to buy!");
-				}
-				signState.update();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 	}
 
+	public Location getLocation() {
+		World w;
+		try {
+			w = Bukkit.getWorld(world);
+			if (w == null) return null;
+		} catch (Exception e) {
+			return null;
+		}
+		return new Location(w, x, y, z, yaw, pitch);
+	}
+
 	public void addVisibleTo(Player p) {
 		if (onlyVisibleTo == null) {
 			onlyVisibleTo = new LinkedList<WeakReference<Player>>();
+			if (playerEntity != null) {
+				for (Player pl : Bukkit.getOnlinePlayers()) {
+					pl.hidePlayer(Statues.getInstance(), playerEntity);
+				}
+			}
 		}
 		for (Iterator<WeakReference<Player>> it = onlyVisibleTo.iterator(); it.hasNext();) {
 			WeakReference<Player> pp = it.next();
@@ -285,6 +326,9 @@ public class Statue {
 			}
 		}
 		onlyVisibleTo.add(new WeakReference<Player>(p));
+		if (playerEntity != null) {
+			p.showPlayer(Statues.getInstance(), playerEntity);
+		}
 	}
 
 	public void removeVisibleTo(Player p) {
@@ -298,10 +342,17 @@ public class Statue {
 				it.remove();
 			}
 		}
+		if (playerEntity != null) {
+			p.hidePlayer(Statues.getInstance(), playerEntity);
+		}
 	}
 
 	public void armswing() {
-		armswing = true;
+		try {
+			if (playerEntity != null)
+				playerEntity.swingMainHand();
+		} catch (Throwable t) {
+		}
 	}
 
 	public void move(double x, double y, double z, float pitch, float yaw) {
@@ -315,7 +366,18 @@ public class Statue {
 		this.z = z;
 		this.pitch = pitch;
 		this.yaw = yaw;
+		if (playerEntity == null) {
+			trySpawnEntity();
+		} else {
+			Location location = getLocation();
+			if (location == null) {
+				despawnEntity();
+			} else {
+				citizensNpc.teleport(location, PlayerTeleportEvent.TeleportCause.PLUGIN);
+			}
+		}
 	}
 
+	@Deprecated
 	public boolean alwaysShownOnPlayerList = false;
 }
