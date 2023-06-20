@@ -2,7 +2,6 @@ package hk.siggi.statues;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import hk.siggi.statues.nms.NMSUtil;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.HashSet;
@@ -205,7 +204,7 @@ public class Statue {
 		statue.facePlayer = facePlayer;
 		statue.standStraight = standStraight;
 		statue.price = sign.getLine(1);
-		statue.wasWallSign = block.getType() == NMSUtil.get().getWallSign();
+		statue.wasWallSign = block.getType() == Util.getWallSign();
 		statue.face = face.toString();
 		return statue;
 	}
@@ -262,8 +261,7 @@ public class Statue {
 				Location location = getLocation();
 				if (location != null) {
 					Block block = location.getBlock();
-					NMSUtil nmsUtil = NMSUtil.get();
-					block.setType(wasWallSign ? nmsUtil.getWallSign() : nmsUtil.getSignPost());
+					block.setType(wasWallSign ? Util.getWallSign() : Util.getSignPost());
 					BlockState state = block.getState();
 					org.bukkit.block.Sign signState = (org.bukkit.block.Sign) state;
 					org.bukkit.material.Sign signMaterial = (org.bukkit.material.Sign) signState.getData();

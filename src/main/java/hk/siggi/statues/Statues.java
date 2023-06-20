@@ -2,7 +2,6 @@ package hk.siggi.statues;
 
 import com.mojang.authlib.GameProfile;
 import hk.siggi.bukkit.plugcubebuildersin.PlugCubeBuildersIn;
-import hk.siggi.statues.nms.NMSUtil;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -69,6 +68,7 @@ public class Statues extends JavaPlugin implements Listener {
 	@Override
 	public void onEnable() {
 		instance = this;
+		Util.init(getServer());
 		startedLoop = false;
 		npcRegistry = CitizensAPI.createNamedNPCRegistry("Statues", new MemoryNPCDataStore());
 		PluginManager pm = getServer().getPluginManager();
@@ -196,8 +196,7 @@ public class Statues extends JavaPlugin implements Listener {
 		if (clicked == null) {
 			return;
 		}
-		NMSUtil nmsUtil = NMSUtil.get();
-		if (clicked.getType() == nmsUtil.getSignPost() || clicked.getType() == nmsUtil.getWallSign()) {
+		if (clicked.getType() == Util.getSignPost() || clicked.getType() == Util.getWallSign()) {
 			Sign sign = (Sign) clicked.getState();
 			if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("[Statue]")
 					|| ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("<Statue>")) {
