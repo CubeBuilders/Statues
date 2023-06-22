@@ -211,13 +211,14 @@ public class Statue {
 
 	public void createNpc() {
 		if (citizensNpc != null || deleted) return;
-		citizensNpc = Statues.getInstance().npcRegistry.createNPC(EntityType.PLAYER, profile.getName());
+		String displayName = Statues.getInstance().forcedNames.getOrDefault(originalUUID, profile.getName());
+		citizensNpc = Statues.getInstance().npcRegistry.createNPC(EntityType.PLAYER, displayName);
 		SkinTrait st = citizensNpc.getOrAddTrait(SkinTrait.class);
 		st.setFetchDefaultSkin(false);
 		try {
 			Collection<Property> textures = profile.getProperties().get("textures");
 			Property property = textures.iterator().next();
-			st.setSkinPersistent(profile.getName(), property.getSignature(), property.getValue());
+			st.setSkinPersistent(displayName, property.getSignature(), property.getValue());
 		} catch (Exception e) {
 		}
 	}

@@ -5,10 +5,15 @@ import hk.siggi.bukkit.plugcubebuildersin.PlugCubeBuildersIn;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.UUID;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.MemoryNPCDataStore;
@@ -41,6 +46,7 @@ public class Statues extends JavaPlugin implements Listener {
 	PlugCubeBuildersIn pluginCB = null;
 	private static Statues instance = null;
 	final ArrayList<Statue> statues = new ArrayList<>();
+	final Map<UUID,String> forcedNames = new HashMap<>();
 	NPCRegistry npcRegistry = null;
 	private Economy economy = null;
 
@@ -91,6 +97,26 @@ public class Statues extends JavaPlugin implements Listener {
 			statues.remove(statue);
 		}
 		File dataFolder = getDataFolder();
+		forcedNames.clear();
+		File forcedNamesFile = new File(dataFolder, "forcednames.txt");
+		if (forcedNamesFile.exists()) {
+			try (BufferedReader reader = new BufferedReader(new FileReader(forcedNamesFile))) {
+				String line;
+				while ((line = reader.readLine()) != null) {
+					int eqPos = line.indexOf("=");
+					if (eqPos == -1) continue;
+					try {
+						UUID uuid = UUID.fromString(line.substring(0, eqPos));
+						String name = line.substring(eqPos + 1);
+						forcedNames.put(uuid, name);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 		File file = new File(dataFolder, "statues.txt");
 		File file2 = new File(dataFolder, "statues.txt.save");
 		if (!file.exists() && file2.exists()) {
