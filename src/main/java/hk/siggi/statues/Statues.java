@@ -90,6 +90,7 @@ public class Statues extends JavaPlugin implements Listener {
 		for (Statue statue : statues) {
 			if (statue.save) {
 				statue.deleted = true;
+				statue.deleteNpc();
 				toDelete.add(statue);
 			}
 		}
