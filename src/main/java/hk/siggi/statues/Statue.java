@@ -218,7 +218,7 @@ public class Statue {
 		try {
 			Collection<Property> textures = profile.getProperties().get("textures");
 			Property property = textures.iterator().next();
-			st.setSkinPersistent(displayName, property.getSignature(), property.getValue());
+			st.setSkinPersistent(displayName, property.signature(), property.value());
 		} catch (Exception e) {
 		}
 	}
