@@ -7,9 +7,9 @@ depend: [CubeTokens, PlugCubeBuildersIn, Vault]
 api-version: 1.13
 permissions:
     hk.siggi.statues.statueadmin:
-        description: Allow banning spammers using /ad.
+        description: Allow use of the plugin.
         default: op
 commands:
     statue:
-        description: Delete nearby statue.
-        usage: /<command>
+        description: Create or delete statues.
+        usage: /<command> <create|delete>
